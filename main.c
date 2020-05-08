@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <dirent.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,11 +8,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void validate_dirp(DIR *dirp, char * directory_path) {
+int is_dot_file(char * file);
+char buf[PATH_MAX + 1];
+
+int validate_dirp(DIR *dirp, char * directory_path) {
     if (dirp == NULL) {
          printf ("Cannot open directory '%s'\n", directory_path);
-         exit(EXIT_FAILURE);
+         return -1;
      }
+     return 0;
 }
 
 int validate_dent(struct dirent* dent, char * directory_path) {
@@ -61,8 +66,11 @@ int get_max_line_length_in_directory(char * directory_path) {
     char   files[dent_size][file_path_size];
     memset(files, 0, dent_size * file_path_size);
 
+    printf("> %s\n", directory_path);
     dirp = opendir(directory_path);
-    validate_dirp(dirp, directory_path);
+    if(validate_dirp(dirp, directory_path) == -1) {
+        return -1;
+    }
     
     do {
         dent = readdir(dirp);
@@ -73,22 +81,44 @@ int get_max_line_length_in_directory(char * directory_path) {
            if (stat(directory_path, &info) == -1)
                continue;
         }
+        
+        if(is_dot_file(dent->d_name) == 0) { 
+            continue;
+        }
 
-        for(int i = 0; i < sizeof(dent->d_name); i++)
-            files[file_count][i] = dent->d_name[i];
+        int directory_path_size = 0;
+        for(int i = 0; i < strlen(directory_path); i++) {
+            files[file_count][i] = directory_path[i];
+            directory_path_size++;
+        }
+
+        files[file_count][directory_path_size] = '/';
+        for(int i = 0; i < strlen(dent->d_name); i++)
+            files[file_count][i + directory_path_size + 1] = dent->d_name[i];
 
         file_count++;
     } while (dent);
     closedir(dirp);
 
     for(int i = 0; i < file_count; i++) {
-        printf("-- %s \n", files[i]);
-        //get_max_line_length_in_directory(files[i]);
+        if(is_dot_file(files[i]) != 0) {
+            get_max_line_length_in_directory(files[i]);
+        }
     }
     // if directory, iterate the files in the dir and recursively apply this method
     // if file, apply get_max_line_length_in_file
     return 0;
 }
+
+int is_dot_file(char * file) {
+    int result;
+    result = strcmp(file, ".");
+    if(result == 0) 
+        return result;
+    result = strcmp(file, "..");
+    return result;
+    
+} 
 
 int get_max_line_length_in_file(char * file_path) {
     FILE *  fp;
