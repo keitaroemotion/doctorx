@@ -72,12 +72,31 @@ int get_max_length_in_file(char * file_path) {
 }
 
 int max_line_lengths[1024] = {};
+int max_line_length_index    = 0;
+
+int ends_with(char * s, char * t)
+{
+    while (*s == *t) {
+        if (!(*s)) {
+            return 1;
+        }
+        s++;
+        t++;
+    }
+    return 0;
+}
 
 int get_max_line_length_in_directory(char * directory_path) {
-    // if file, process as file and return 0 here.
+
     if(is_dir(directory_path) == -1) {
+        if(ends_with(directory_path, ".groovy") != 0) {
+            return -1; 
+        }
         int max_length = get_max_length_in_file(directory_path);
-        printf("%s: %d\n", directory_path, max_length);
+        if(max_length > 0) {
+            max_line_lengths[max_line_length_index] = max_length;
+            max_line_length_index++;
+        }
         return 0;
     }
 
@@ -131,5 +150,15 @@ int get_max_line_length_in_directory(char * directory_path) {
 
 int main(void) {
     get_max_line_length_in_directory("/Users/kei.sugano/code/huubhr/backend");
+    int sum      = 0;
+    int max_line = 0;
+    for(int i = 0; i < max_line_length_index; i++) {
+        sum += max_line_lengths[i];
+        if(max_line < max_line_lengths[i]) {
+            max_line = max_line_lengths[i];
+        }
+    }
+    float average = sum/sizeof(max_line_lengths);
+    printf("max line: %d\n", max_line);
     return 0;
 }
