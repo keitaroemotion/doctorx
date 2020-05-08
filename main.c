@@ -54,10 +54,28 @@ bool starts_with(char * target, char elem) {
     return target[0] == elem;
 }
 
+// is there duplication here???
+int get_maximum_length_in_file(char * file_path) {
+    FILE* file = fopen(file_path, "r"); /* should check the result */
+    char line[256];
+    int  max_size = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        int curr_size = strlen(line);
+        if(max_size < curr_size) {
+            max_size = curr_size;
+        }
+    }
+
+    fclose(file);
+    return max_size;
+}
+
 int get_max_line_length_in_directory(char * directory_path) {
     // if file, process as file and return 0 here.
     if(is_dir(directory_path) == -1) {
-        printf("file: %s \n", directory_path);
+        int max_length = get_maximum_length_in_file(directory_path);
+        printf("%s: %d\n", directory_path, max_length);
         return 0;
     }
 
@@ -70,7 +88,6 @@ int get_max_line_length_in_directory(char * directory_path) {
     char   files[dent_size][file_path_size];
     memset(files, 0, dent_size * file_path_size);
 
-    printf("> %s\n", directory_path);
     dirp = opendir(directory_path);
     if(validate_dirp(dirp, directory_path) == -1) {
         return -1;
