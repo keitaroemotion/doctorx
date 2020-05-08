@@ -12,42 +12,62 @@ void validate_dirp(DIR *dirp, char * directory_path) {
      }
 }
 
-void validate_dent(struct dirent* dent, char * directory_path) {
+int validate_dent(struct dirent* dent, char * directory_path) {
     if (dent == NULL) {
-         printf ("Cannot open directory '%s'\n", directory_path);
-         exit(EXIT_FAILURE);
+         //printf ("Cannot open directory '%s'\n", directory_path);
+         return -1;
      }
+     return 0;
+}
+
+int get_dent_size(char * directory_path) {
+    DIR    *dirp;
+    struct dirent* dent;
+    int    dent_size = 0;
+
+    dirp = opendir(directory_path);
+
+    do {
+        dent = readdir(dirp);
+        dent_size++;
+    } while (dent);
+    return dent_size;
 }
 
 int get_max_line_length_in_directory(char * directory_path) {
     DIR    *dirp;
     struct dirent* dent;
     struct stat info;
+    int    file_count = 0;
+    int    dent_size  = get_dent_size(directory_path);
+
+    char   files[dent_size][1024];
+    memset(files, 0, dent_size*1024*sizeof(char));
 
     dirp = opendir(directory_path);
     validate_dirp(dirp, directory_path);
+    
     do {
         dent = readdir(dirp);
-        validate_dent(dent, directory_path); 
+        if(validate_dent(dent, directory_path) == -1) 
+            continue;
+
         if(dent){
-           if (stat(directory_path, &info) == -1) {
-               perror("stat");
-               exit(EXIT_FAILURE);
-           } 
+           if (stat(directory_path, &info) == -1)
+               continue;
         }
-        switch (info.st_mode & S_IFMT) {
-            case S_IFBLK:  printf("block device\n");            break;
-            case S_IFCHR:  printf("character device\n");        break;
-            case S_IFDIR:  printf("dir ");                      break;
-            case S_IFIFO:  printf("FIFO/pipe\n");               break;
-            case S_IFLNK:  printf("lnk ");                      break;
-            case S_IFREG:  printf("reg ");                      break;
-            case S_IFSOCK: printf("socket\n");                  break;
-            default:       printf("unknown?\n");                break;
-        }
+
+        for(int i = 0; i < (sizeof dent->d_name); i++)
+            files[file_count][i] = dent->d_name[i];
+
+        file_count++;
         printf("%s \n", dent->d_name);
     } while (dent);
     closedir(dirp);
+
+    for(int i = 0; i < (sizeof files); i++) {
+        printf("-- %s \n", files[i]);
+    }
     // if directory, iterate the files in the dir and recursively apply this method
     // if file, apply get_max_line_length_in_file
     return 0;
