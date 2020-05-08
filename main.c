@@ -5,22 +5,30 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+void validate_dirp(DIR *dirp, char * directory_path) {
+    if (dirp == NULL) {
+         printf ("Cannot open directory '%s'\n", directory_path);
+         exit(EXIT_FAILURE);
+     }
+}
+
+void validate_dent(struct dirent* dent, char * directory_path) {
+    if (dent == NULL) {
+         printf ("Cannot open directory '%s'\n", directory_path);
+         exit(EXIT_FAILURE);
+     }
+}
+
 int get_max_line_length_in_directory(char * directory_path) {
     DIR    *dirp;
     struct dirent* dent;
     struct stat info;
 
     dirp = opendir(directory_path);
-    if (dirp == NULL) {
-         printf ("Cannot open directory '%s'\n", directory_path);
-         return 1;
-     }
+    validate_dirp(dirp, directory_path);
     do {
         dent = readdir(dirp);
-        if (dent == NULL) {
-            printf ("Cannot open directory '%s'\n", directory_path);
-            return 1;
-        }
+        validate_dent(dent, directory_path); 
         if(dent){
            if (stat(directory_path, &info) == -1) {
                perror("stat");
