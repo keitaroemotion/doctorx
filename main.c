@@ -87,9 +87,8 @@ int ends_with(char * s, char * t)
 }
 
 int get_max_line_length_in_directory(char * directory_path) {
-
     if(is_dir(directory_path) == -1) {
-        if(ends_with(directory_path, ".groovy") != 0) {
+        if(!(ends_with(directory_path, ".groovy") == 0 || ends_with(directory_path, ".hs"))) {
             return -1; 
         }
         int max_length = get_max_length_in_file(directory_path);
@@ -148,8 +147,9 @@ int get_max_line_length_in_directory(char * directory_path) {
     return 0;
 }
 
-int main(void) {
-    get_max_line_length_in_directory("/Users/kei.sugano/code/huubhr/backend");
+int main(int argc, char *argv[]) {
+    printf("dir: %s\n", argv[1]);
+    get_max_line_length_in_directory(argv[1]);
     int sum      = 0;
     int max_line = 0;
     for(int i = 0; i < max_line_length_index; i++) {
