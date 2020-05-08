@@ -39,8 +39,8 @@ int get_max_line_length_in_directory(char * directory_path) {
     DIR    *dirp;
     struct dirent* dent;
     struct stat info;
-    int    file_count = 0;
-    int    dent_size  = get_dent_size(directory_path);
+    int    file_count     = 0;
+    int    dent_size      = get_dent_size(directory_path);
     int    file_path_size = 500;
     char   files[dent_size][file_path_size];
     memset(files, 0, dent_size * file_path_size);
@@ -76,10 +76,12 @@ int get_max_line_length_in_directory(char * directory_path) {
 
 int get_max_line_length_in_file(char * file_path) {
     FILE *  fp;
+    ssize_t read;
     char *  line = NULL;
     size_t  len  = 0;
-    ssize_t read;
+
     fp = fopen(file_path, "r");
+
     if(fp == NULL)
         exit(EXIT_FAILURE);
     while((read = getline(&line, &len, fp)) != -1) {
