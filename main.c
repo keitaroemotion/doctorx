@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 void validate_dirp(DIR *dirp, char * directory_path) {
     if (dirp == NULL) {
@@ -35,7 +36,22 @@ int get_dent_size(char * directory_path) {
     return dent_size;
 }
 
+int is_dir(char * file_path) {
+    DIR* dir = opendir(file_path);
+    if (dir) {
+        closedir(dir);
+        return 0;
+    } 
+    return -1;
+}
+
 int get_max_line_length_in_directory(char * directory_path) {
+    // if file, process as file and return 0 here.
+    if(is_dir(directory_path) == -1) {
+        printf("file: %s \n", directory_path);
+        return 0;
+    }
+
     DIR    *dirp;
     struct dirent* dent;
     struct stat info;
@@ -58,7 +74,6 @@ int get_max_line_length_in_directory(char * directory_path) {
                continue;
         }
 
-        printf("> %s \n", dent->d_name);
         for(int i = 0; i < sizeof(dent->d_name); i++)
             files[file_count][i] = dent->d_name[i];
 
@@ -68,6 +83,7 @@ int get_max_line_length_in_directory(char * directory_path) {
 
     for(int i = 0; i < file_count; i++) {
         printf("-- %s \n", files[i]);
+        //get_max_line_length_in_directory(files[i]);
     }
     // if directory, iterate the files in the dir and recursively apply this method
     // if file, apply get_max_line_length_in_file
