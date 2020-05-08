@@ -55,7 +55,7 @@ bool starts_with(char * target, char elem) {
 }
 
 // is there duplication here???
-int get_maximum_length_in_file(char * file_path) {
+int get_max_length_in_file(char * file_path) {
     FILE* file = fopen(file_path, "r"); /* should check the result */
     char line[256];
     int  max_size = 0;
@@ -71,10 +71,12 @@ int get_maximum_length_in_file(char * file_path) {
     return max_size;
 }
 
+int max_line_lengths[1024] = {};
+
 int get_max_line_length_in_directory(char * directory_path) {
     // if file, process as file and return 0 here.
     if(is_dir(directory_path) == -1) {
-        int max_length = get_maximum_length_in_file(directory_path);
+        int max_length = get_max_length_in_file(directory_path);
         printf("%s: %d\n", directory_path, max_length);
         return 0;
     }
@@ -124,33 +126,10 @@ int get_max_line_length_in_directory(char * directory_path) {
     for(int i = 0; i < file_count; i++) {
         get_max_line_length_in_directory(files[i]);
     }
-    // if directory, iterate the files in the dir and recursively apply this method
-    // if file, apply get_max_line_length_in_file
-    return 0;
-}
-
-int get_max_line_length_in_file(char * file_path) {
-    FILE *  fp;
-    ssize_t read;
-    char *  line = NULL;
-    size_t  len  = 0;
-
-    fp = fopen(file_path, "r");
-
-    if(fp == NULL)
-        exit(EXIT_FAILURE);
-    while((read = getline(&line, &len, fp)) != -1) {
-        printf("Retrieved line of length %zu:\n", read);
-        printf("%s", line);
-    }
-    fclose(fp);
-    if(line)
-        free(line);
     return 0;
 }
 
 int main(void) {
     get_max_line_length_in_directory("/Users/kei.sugano/code/huubhr/backend");
-    //get_max_line_length_in_file("tmp/test");
     return 0;
 }
