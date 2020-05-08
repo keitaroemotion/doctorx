@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-int is_dot_file(char * file);
 char buf[PATH_MAX + 1];
 
 int validate_dirp(DIR *dirp, char * directory_path) {
@@ -50,6 +50,10 @@ int is_dir(char * file_path) {
     return -1;
 }
 
+bool starts_with(char * target, char elem) {
+    return target[0] == elem;
+}
+
 int get_max_line_length_in_directory(char * directory_path) {
     // if file, process as file and return 0 here.
     if(is_dir(directory_path) == -1) {
@@ -82,7 +86,7 @@ int get_max_line_length_in_directory(char * directory_path) {
                continue;
         }
         
-        if(is_dot_file(dent->d_name) == 0) { 
+        if(starts_with(dent->d_name, '.') == true) { 
             continue;
         }
 
@@ -101,24 +105,12 @@ int get_max_line_length_in_directory(char * directory_path) {
     closedir(dirp);
 
     for(int i = 0; i < file_count; i++) {
-        if(is_dot_file(files[i]) != 0) {
-            get_max_line_length_in_directory(files[i]);
-        }
+        get_max_line_length_in_directory(files[i]);
     }
     // if directory, iterate the files in the dir and recursively apply this method
     // if file, apply get_max_line_length_in_file
     return 0;
 }
-
-int is_dot_file(char * file) {
-    int result;
-    result = strcmp(file, ".");
-    if(result == 0) 
-        return result;
-    result = strcmp(file, "..");
-    return result;
-    
-} 
 
 int get_max_line_length_in_file(char * file_path) {
     FILE *  fp;
