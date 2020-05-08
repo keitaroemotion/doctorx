@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -40,9 +41,9 @@ int get_max_line_length_in_directory(char * directory_path) {
     struct stat info;
     int    file_count = 0;
     int    dent_size  = get_dent_size(directory_path);
-
-    char   files[dent_size][1024];
-    memset(files, 0, dent_size*1024*sizeof(char));
+    int    file_path_size = 500;
+    char   files[dent_size][file_path_size];
+    memset(files, 0, dent_size * file_path_size);
 
     dirp = opendir(directory_path);
     validate_dirp(dirp, directory_path);
@@ -57,15 +58,15 @@ int get_max_line_length_in_directory(char * directory_path) {
                continue;
         }
 
-        for(int i = 0; i < (sizeof dent->d_name); i++)
+        printf("> %s \n", dent->d_name);
+        for(int i = 0; i < sizeof(dent->d_name); i++)
             files[file_count][i] = dent->d_name[i];
 
         file_count++;
-        printf("%s \n", dent->d_name);
     } while (dent);
     closedir(dirp);
 
-    for(int i = 0; i < (sizeof files); i++) {
+    for(int i = 0; i < file_count; i++) {
         printf("-- %s \n", files[i]);
     }
     // if directory, iterate the files in the dir and recursively apply this method
